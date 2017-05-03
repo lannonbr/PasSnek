@@ -2,13 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "util.h"
 #include "statement.h"
 #include "tree.h"
 #include "node.h"
 #include "symtable.h"
 #include "stmtstack.h"
 #include "regstack.h"
+#include "pygen.h"
+#include "util.h"
 
 sym_table_stack_t *top_scope;
 node_t *tmp_nodes;
@@ -18,6 +19,8 @@ int stmt_scope_id;
 int num_registers;
 regstack_t * reg_stack;
 int label_count;
+FILE * output;
+int tab_count;
 %}
 
 %union {
@@ -84,10 +87,11 @@ program: PROGRAM
     subprogram_declarations
     compound_statement
     {
-        stmt_list_print($9, 0);
+        /* stmt_list_print($9, 0); */
         /* gen_code_main_preamble(); */
         /* gen_code_stmt_list($9); */
         /* gen_code_main_ending(); */
+		py_gen($9);
     }
     '.' { top_scope = pop_stack(top_scope); }
     ;
@@ -141,10 +145,11 @@ subprogram_declaration: subprogram_head
 	subprogram_declarations 
 	compound_statement
 	{
-        stmt_list_print($4, 0);
+        /* stmt_list_print($4, 0); */
 		/* gen_code_proc_preamble(); */
 		/* gen_code_stmt_list($4); */
 		/* gen_code_proc_ending(); */
+		py_gen($4);
 		top_scope = pop_stack(top_scope);
 	}
     ;
@@ -272,11 +277,16 @@ int main() {
 	reg_stack = push_reg_stack(reg_stack, "%rcx");
 	reg_stack = push_reg_stack(reg_stack, "%rbx");
 	reg_stack = push_reg_stack(reg_stack, "%rax");
-    label_count = 2;
+	label_count = 2;
+	tab_count = 0;
     
 	top_scope = push_stack(top_scope, "main");
 
-	gen_code_io_strings();
+	/* gen_code_io_strings(); */
+
+	output = fopen("pyout.py", "w");
 
     yyparse();
+
+	fclose(output);
 }

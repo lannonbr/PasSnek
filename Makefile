@@ -1,11 +1,14 @@
-psc: pascal.tab.o lex.yy.o tree.o node.o symtable.o statement.o stmtstack.o util.o gencode.o regstack.o
-	clang -g -o psc pascal.tab.o lex.yy.o tree.o node.o symtable.o statement.o util.o stmtstack.o gencode.o regstack.o -lfl -ly
+psc: pascal.tab.o lex.yy.o tree.o node.o symtable.o statement.o stmtstack.o util.o gencode.o regstack.o pygen.o
+	clang -g -o psc pascal.tab.o lex.yy.o tree.o node.o symtable.o statement.o util.o stmtstack.o gencode.o regstack.o pygen.o -lfl -ly
 
 tree.o: tree.c
 	clang -g -c tree.c
 
 gencode.o: gencode.c
 	clang -g -c gencode.c
+
+pygen.o: pygen.c
+	clang -g -c pygen.c
 
 regstack.o: regstack.c
 	clang -g -c regstack.c
