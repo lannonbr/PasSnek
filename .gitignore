@@ -1,0 +1,5 @@
+pascal.output
+*.tab.*
+*.yy.*
+psc
+*.o
