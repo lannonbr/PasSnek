@@ -90,7 +90,7 @@ void gen_code_stmt_list(statement_t *list) {
 	if(stmt == NULL) {
 		return;
 	}
-	
+
 	switch(stmt->type) {
 		case ST_ASSIGN:
 			stmt->stmt.assign_stmt.tree = tree_label(stmt->stmt.assign_stmt.tree);
@@ -190,7 +190,7 @@ void gen_code_write(tree_t *expr) {
 	printf("\tmovq\t$.LC0, %%rdi\n");
 
 	printf("\tmovq\t$0, %%rax\n");
-	
+
 	// Call printf
 	printf("\tcall\tprintf\n");
 }
@@ -249,10 +249,10 @@ void gen_code_if_then_else(statement_t *stmt) {
 void gen_code_while(statement_t *stmt) {
 	// write jmp to N (ex: .L2)
 	printf("\tjmp\t.L%d\n", label_count);
-	
+
 	// write N+1 and body of loop
 	printf(".L%d:\n", label_count+1);
-	gen_code_stmt_list(stmt->stmt.while_stmt.do_stmt);	
+	gen_code_stmt_list(stmt->stmt.while_stmt.do_stmt);
 
 	// write N and condition for this loop
 	printf(".L%d:\n", label_count);
@@ -271,7 +271,7 @@ void gen_code_while(statement_t *stmt) {
             printf("\tjl .L%d\n", label_count+1);
             break;
     }
-	
+
 }
 
 void gen_code_proc_call(statement_t *stmt) {
@@ -296,7 +296,7 @@ void gen_code_proc_ending() {
 void push_parameters(tree_list_t *list) {
 	tree_list_t * loc_list = list;
 	tree_t * tree = loc_list->head;
-	
+
 	while(tree != NULL) {
 		print_tree(tree, 10);
 		tree = loc_list->next;
@@ -306,9 +306,9 @@ void push_parameters(tree_list_t *list) {
 
 char* get_val(tree_t *tree) {
 	char* str = malloc(50 * sizeof(char));
-	
+
 	switch(tree->type) {
-		case T_INT: 
+		case T_INT:
 			sprintf(str, "$%d", tree->attribute.ival);
 			break;
 		case T_ID:
