@@ -13,7 +13,9 @@ void py_relationals(statement_t * list);
 void py_gen(statement_t * list);
 
 void py_print_expr(tree_t *tree);
+void py_binop(tree_t *tree);
 void py_write(tree_t * tree);
 void py_read(tree_t *tree);
+void py_if(statement_t *list);
 
 #endif

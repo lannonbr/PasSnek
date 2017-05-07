@@ -45,6 +45,8 @@ void py_gen(statement_t * list){
 //walks thought the tree dealing with cases as they come
 	printf("FUCKING FUCK THE GEN DO THE PYTHONS\n");
 
+	py_tab();
+
 	switch(list->type) {
 		case ST_ASSIGN:
 			printf("ASSIGN :D\n");
@@ -61,6 +63,10 @@ void py_gen(statement_t * list){
 				printf("else\n");
 				py_proc(list->stmt.proc_stmt.proc_expr_list->head);
 			}
+			break;
+		case ST_IFTHENELSE:
+			printf("IFTHENELSE");
+			py_if(list);	
 			break;
 		default:
 			printf("LULZ\n");
@@ -85,6 +91,7 @@ void py_print_expr(tree_t *tree) {
 			POUT("%d", tree->attribute.ival);
 			break;
 		case T_BINOP:
+			py_binop(tree);
 			break;
 		case T_ID:
 			POUT("%s", tree->attribute.sval->name);
@@ -99,6 +106,50 @@ void py_print_expr(tree_t *tree) {
 	}
 }
 
+void py_binop(tree_t *tree) {
+	switch(tree->attribute.bopval) {
+		case OP_LT:
+			POUT(" < ");
+			break;
+		case OP_LE:
+			POUT(" <= ");
+			break;
+		case OP_GT:
+			POUT(" > ");
+			break;
+		case OP_GE:
+			POUT(" >= ");
+			break;
+		case OP_EQ:
+			POUT(" == ");
+			break;
+		case OP_NEQ:
+			POUT(" != ");
+			break;
+		case OP_ADD:
+			POUT(" + ");
+			break;
+		case OP_SUB:
+			POUT(" - ");
+			break;
+		case OP_OR:
+			POUT(" or ");
+			break;
+		case OP_MUL:
+			POUT(" * ");
+			break;
+		case OP_DIV:
+			POUT(" / ");
+			break;
+		case OP_MOD:
+			POUT(" % ");
+			break;
+		case OP_AND:
+			POUT(" and ");
+			break;
+	}
+}
+
 void py_write(tree_t* tree) {
 	POUT("print(");
 	py_print_expr(tree);
@@ -107,8 +158,20 @@ void py_write(tree_t* tree) {
 
 void py_read(tree_t *tree){
 	printf("i did a read\n"); 
-	POUT("%s =",tree->attribute.sval->name);
-	POUT("input()\n");
+	POUT("%s = input()\n",tree->attribute.sval->name);
 	//print_tree(tree);
 
+}
+
+void py_if(statement_t * list) {
+	POUT("if (");
+	py_print_expr(list->stmt.if_then_else_stmt.tree);
+	POUT("):\n");
+	tab_count++;
+	py_gen(list->stmt.if_then_else_stmt.if_stmt);
+	tab_count--;
+	POUT("else:\n");
+	tab_count++;
+	py_gen(list->stmt.if_then_else_stmt.else_stmt);
+	tab_count--;
 }

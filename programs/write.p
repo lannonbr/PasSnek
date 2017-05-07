@@ -3,5 +3,5 @@ program main( input, output );
 begin
   a := 90;
   read(a);
-  write(a);
+  write(a)
 end.
