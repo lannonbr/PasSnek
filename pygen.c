@@ -68,6 +68,10 @@ void py_gen(statement_t * list){
 			printf("IFTHENELSE");
 			py_if(list);	
 			break;
+		case ST_WHILE:
+			printf("While");
+			py_while(list);	
+			break;
 		default:
 			printf("LULZ\n");
 			break;
@@ -158,7 +162,7 @@ void py_write(tree_t* tree) {
 
 void py_read(tree_t *tree){
 	printf("i did a read\n"); 
-	POUT("%s = input()\n",tree->attribute.sval->name);
+	POUT("%s = int(input())\n",tree->attribute.sval->name);
 	//print_tree(tree);
 
 }
@@ -173,5 +177,16 @@ void py_if(statement_t * list) {
 	POUT("else:\n");
 	tab_count++;
 	py_gen(list->stmt.if_then_else_stmt.else_stmt);
+	tab_count--;
+}
+
+// tree
+// do_stmt
+void py_while(statement_t * list) {
+	POUT("while (");
+	py_print_expr(list->stmt.while_stmt.tree);
+	POUT("):\n");
+	tab_count++;
+	py_gen(list->stmt.while_stmt.do_stmt);
 	tab_count--;
 }
