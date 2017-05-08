@@ -22,7 +22,7 @@ typedef struct tree_s {
 
 typedef struct tree_list_s {
 	tree_t * head;
-	tree_t * next;
+	struct tree_list_s * next;
 } tree_list_t;
 
 tree_t * gen_tree();

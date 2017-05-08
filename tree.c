@@ -152,11 +152,11 @@ tree_list_t * tree_list_insert(tree_list_t *tree_list, tree_t *tree) {
 	tree_list_t *curr_tree = tree_list;
 
 	while(curr_tree->next != NULL)
-		curr_tree->head = curr_tree->next;
+		curr_tree = curr_tree->next;
 
-	curr_tree->next = tree;
+	curr_tree->next = create_tree_list(tree);
 
-	return curr_tree;
+	return tree_list;
 }
 
 void free_tree_list(tree_list_t *tree_list) {

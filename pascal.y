@@ -59,6 +59,8 @@ int tab_count;
 %type <tyval> type
 %type <tyval> standard_type
 
+%type <nval> arguments
+%type <nval> parameter_list
 %type <nval> identifier_list
 
 %type <stval> compound_statement
@@ -82,7 +84,7 @@ start: program;
 
 program: PROGRAM
     IDENT
-    '(' identifier_list ')' ';' 
+    '(' identifier_list ')' ';' { tmp_nodes = NULL; }
     declarations
     subprogram_declarations
     compound_statement
@@ -100,17 +102,31 @@ identifier_list: IDENT
     { 
         node_t * node = sts_insert(top_scope, 0, $1);
         node_t * tmp = tmp_nodes;
-        tmp_nodes=node;
-        tmp_nodes->next = tmp;
+        
+        if(tmp_nodes) {
+            while(tmp->next != NULL) {
+                tmp = tmp->next;
+            }
+            tmp->next = node;
+        } else {
+            tmp_nodes = node;
+        }
 
         $$ = tmp_nodes;
     }
     | identifier_list ',' IDENT 
     {
-        node_t * node = sts_insert(top_scope, 0, $3);
+        node_t * node = sts_insert(top_scope, 0, $3);        
         node_t * tmp = tmp_nodes;
-        tmp_nodes=node;
-        tmp_nodes->next = tmp;
+
+        if(tmp_nodes) {
+            while(tmp->next != NULL) {
+                tmp = tmp->next;
+            }
+            tmp->next = node;
+        } else {
+            tmp_nodes = node;
+        }
 
         $$ = tmp_nodes;
     }
@@ -123,6 +139,7 @@ declarations: declarations VAR identifier_list ':' type ';'
             node->var_type = $5;
             node = node->next;
         }
+        tmp_nodes = NULL;
     }
     | /* empty */
     ;
@@ -154,24 +171,39 @@ subprogram_declaration: subprogram_head
 	}
     ;
 
-subprogram_head: FUNCTION IDENT arguments ':' standard_type ';'
-    | PROCEDURE
-	IDENT
-	{ 
-		node_t* temp = sts_insert(top_scope, 2, $2);
+subprogram_head: FUNCTION IDENT arguments ':' standard_type ';' 
+    {
+        node_t* temp = sts_insert(top_scope, 1, $2);
+        printf("New Func: %s\n", temp->name);
 		top_scope = push_stack(top_scope, $2); 
 		top_scope->var_count++;
-		/* printf("%s:\n", $2); */
-	}
-	arguments ';'
+		printf("%s:\n", $2);
+
+        temp->arguments = $3;
+
+        temp->ret_type = $5;
+
+        // py_funcproc_header(temp);
+    }
+    | PROCEDURE IDENT arguments ';'
+    {
+        node_t* temp = sts_insert(top_scope, 2, $2);
+        printf("New Proc: %s\n", temp->name);
+		top_scope = push_stack(top_scope, $2); 
+		top_scope->var_count++;
+
+        temp->arguments = $3;
+
+        // py_funcproc_header(temp);
+    }
     ;
 
-arguments: '(' parameter_list ')'
+arguments: '(' parameter_list ')' { $$ = $2; }
     | /* empty */
     ;
 
-parameter_list: identifier_list ':' type
-    | parameter_list ';' identifier_list ':' type
+parameter_list: identifier_list ':' type { $$ = $1; /* Don't care about types because we don't need to with python */ }
+    | parameter_list ';' identifier_list ':' type { $$ = $1; }
     ;
 
 compound_statement: BBEGIN
@@ -207,7 +239,11 @@ variable: IDENT { $$ = sts_global_search(top_scope, $1); /* printf("Assign to va
     ;
 
 procedure_statement: IDENT { $$ = stmt_gen_proc(sts_global_search(top_scope, $1), NULL); }
-    | IDENT '(' expression_list ')' { $$ = stmt_gen_proc(sts_global_search(top_scope, $1), $3); tmp_tree_list = NULL; }
+    | IDENT '(' expression_list ')'
+    { 
+        $$ = stmt_gen_proc(sts_global_search(top_scope, $1), $3);
+        tmp_tree_list = NULL;
+    }
     ;
 
 expression_list: expression

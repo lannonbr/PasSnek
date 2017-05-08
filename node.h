@@ -12,6 +12,8 @@ typedef struct node_s {
 	type_e var_type;
 	int arr_size;
 
+	struct node_s *arguments;
+
 	/* function only things */
 	type_e ret_type;
 	int param_count;
