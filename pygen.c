@@ -1,56 +1,71 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "tree.h"
 #include "util.h"
 #include "statement.h"
 #include "tree.h"
+#include "symtable.h"
 #include "pascal.tab.h"
 #include "pygen.h"
 
 extern int tab_count;
 extern FILE * output;
+extern sym_table_stack_t * top_scope;
 
-void py_func(statement_t * list){
-//deals with python function calls when they show upp in the tree
-
-}
-
-void py_proc(statement_t * stmt){
-	POUT("def %s ():\n" , stmt->stmt.proc_stmt.ident->name);
+void py_funcproc_header(node_t * node) {
+	POUT("def %s(", node->name);
+	py_arg_list(node->arguments); 
+	POUT("):\n");
 	tab_count++;
-	stmt_pop_stack(stmt->stmt.proc_stmt.proc_expr_list->head);
-	py_tab();
-	py_gen(stmt->stmt.proc_stmt.proc_expr_list->head);
-	tab_count--;
 }
 
-void py_math(statement_t * list){
-
+void py_arg_list(node_t * nodes) {
+	if(nodes == NULL) {
+		return;
+	}
+	POUT("%s,", nodes->name);
+	py_arg_list(nodes->next);
 }
 
-void py_array(statement_t * list){
-
+void py_call(char* name, tree_list_t* args) {
+	POUT("%s(", name);
+	if(args != NULL) {
+		py_call_args(args);
+	}
+	POUT(")");
 }
 
-void py_relationals(statement_t * list){
+void py_call_args(tree_list_t *args) {
+	tree_list_t *tl = args;
+	tree_t *curr = tl->head;
 
-
-}
-
-void py_declrations(statement_t * list){
-
+	if(curr != NULL) {
+		py_print_expr(curr);
+		POUT(", ");
+		while(tl->next != NULL) {
+			tl = tl->next;
+			curr = tl->head;
+			py_print_expr(curr);
+			POUT(", ");
+		}
+	}
 }
 
 void py_gen(statement_t * list){
 //walks thought the tree dealing with cases as they come
-	printf("FUCKING FUCK THE GEN DO THE PYTHONS\n");
 
 	py_tab();
 
 	switch(list->type) {
 		case ST_ASSIGN:
 			printf("ASSIGN :D\n");
-			POUT("%s = ", list->stmt.assign_stmt.ident->name);
+			if(strcmp(list->stmt.assign_stmt.ident->name, top_scope->name) == 0) {
+				POUT("return ");
+
+			} else {
+				POUT("%s = ", list->stmt.assign_stmt.ident->name);
+			}
 			py_print_expr(list->stmt.assign_stmt.tree);
 			POUT("\n");
 			break;
@@ -61,7 +76,8 @@ void py_gen(statement_t * list){
 				py_read(list->stmt.proc_stmt.proc_expr_list->head);
 			}else{
 				printf("else\n");
-				py_proc(list->stmt.proc_stmt.proc_expr_list->head);
+				py_call(list->stmt.proc_stmt.ident->name, list->stmt.proc_stmt.proc_expr_list);
+				POUT("\n");
 			}
 			break;
 		case ST_IFTHENELSE:
@@ -99,6 +115,9 @@ void py_print_expr(tree_t *tree) {
 			break;
 		case T_ID:
 			POUT("%s", tree->attribute.sval->name);
+			break;
+		case T_FUNC:
+			py_call(tree->attribute.sval->name, tree->args);
 			break;
 		default:
 			POUT("Case Not Handled in print_exprt\n");

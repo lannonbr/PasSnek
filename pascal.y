@@ -89,11 +89,7 @@ program: PROGRAM
     subprogram_declarations
     compound_statement
     {
-        /* stmt_list_print($9, 0); */
-        /* gen_code_main_preamble(); */
-        /* gen_code_stmt_list($9); */
-        /* gen_code_main_ending(); */
-		py_gen($9);
+		py_gen($10);
     }
     '.' { top_scope = pop_stack(top_scope); }
     ;
@@ -162,31 +158,34 @@ subprogram_declaration: subprogram_head
 	subprogram_declarations 
 	compound_statement
 	{
-        /* stmt_list_print($4, 0); */
-		/* gen_code_proc_preamble(); */
-		/* gen_code_stmt_list($4); */
-		/* gen_code_proc_ending(); */
 		py_gen($4);
+        tab_count--;
+        tmp_nodes = NULL;
 		top_scope = pop_stack(top_scope);
 	}
     ;
 
 subprogram_head: FUNCTION IDENT arguments ':' standard_type ';' 
     {
+        tmp_nodes = NULL;
         node_t* temp = sts_insert(top_scope, 1, $2);
         printf("New Func: %s\n", temp->name);
+        
 		top_scope = push_stack(top_scope, $2); 
 		top_scope->var_count++;
 		printf("%s:\n", $2);
 
         temp->arguments = $3;
 
+        if(temp->arguments != NULL) printf("ARG: %s\n", temp->arguments->name);
+
         temp->ret_type = $5;
 
-        // py_funcproc_header(temp);
+        py_funcproc_header(temp);
     }
     | PROCEDURE IDENT arguments ';'
     {
+        tmp_nodes = NULL;
         node_t* temp = sts_insert(top_scope, 2, $2);
         printf("New Proc: %s\n", temp->name);
 		top_scope = push_stack(top_scope, $2); 
@@ -194,12 +193,14 @@ subprogram_head: FUNCTION IDENT arguments ':' standard_type ';'
 
         temp->arguments = $3;
 
-        // py_funcproc_header(temp);
+        if(temp->arguments != NULL) printf("ARG: %s\n", temp->arguments->name);
+
+        py_funcproc_header(temp);
     }
     ;
 
 arguments: '(' parameter_list ')' { $$ = $2; }
-    | /* empty */
+    | /* empty */ { $$ = NULL; }
     ;
 
 parameter_list: identifier_list ':' type { $$ = $1; /* Don't care about types because we don't need to with python */ }
@@ -282,7 +283,7 @@ term: factor { $$ = $1; }
     ;
 
 factor: IDENT { $$ = gen_ident(sts_global_search(top_scope, $1)); $$->side = S_LEFT; $$->leaf = 1; }
-    | IDENT '(' expression_list ')' { printf("[Parser] Function Call\n"); $$ = gen_tree(); tmp_tree_list = NULL;}
+    | IDENT '(' expression_list ')' { $$ = gen_func(sts_global_search(top_scope, $1), $3); tmp_tree_list = NULL;}
     | IDENT '[' expression ']' { printf("[Parser] Array Access\n"); $$ = gen_tree(); }
     | INUM { $$ = gen_int($1); $$->leaf = 1; $$->side = S_LEFT; }
     | RNUM { $$ = gen_real($1); $$->leaf = 1; $$->side = S_LEFT; }

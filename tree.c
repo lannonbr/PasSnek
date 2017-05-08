@@ -48,6 +48,14 @@ tree_t * gen_unaryop(unaryop opval, tree_t *left) {
 	return new_tree;
 }
 
+tree_t * gen_func(node_t *sval, tree_list_t *tree_list) {
+	tree_t *new_tree = (tree_t *) malloc(sizeof(tree_t));
+	new_tree->type = T_FUNC;
+	new_tree->attribute.sval = sval;
+	new_tree->args = tree_list;
+	return new_tree;
+}
+
 // Print out the tree for debugging purposes
 void print_tree(tree_t * tree, int offset) {
 	if(tree == NULL)

@@ -30,6 +30,7 @@ typedef enum {
 	T_ARR_INT,
 	T_ARR_REAL,
 	T_ID,
+	T_FUNC,
 	T_OTHER
 } type_e;
 

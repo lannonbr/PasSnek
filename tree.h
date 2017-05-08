@@ -5,6 +5,8 @@
 #ifndef TREE_H
 #define TREE_H
 
+typedef struct tree_list_s tree_list_t;
+
 typedef struct tree_s {
 	type_e type;
 	int leaf;
@@ -18,6 +20,7 @@ typedef struct tree_s {
 		unaryop uopval;
 	} attribute;
 	struct tree_s *left, *right;
+	tree_list_t *args; // For functions only
 } tree_t;
 
 typedef struct tree_list_s {
@@ -31,6 +34,7 @@ tree_t * gen_num(int ival);
 tree_t * gen_real(float fval);
 tree_t * gen_binop(binop opval, tree_t *left, tree_t *right);
 tree_t * gen_unaryop(unaryop opval, tree_t *left);
+tree_t * gen_func(node_t *sval, tree_list_t *tree_list);
 
 void print_tree(tree_t *tree, int offset);
 void print_binop(tree_t *tree);
